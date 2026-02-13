@@ -12,17 +12,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Screen } from '../../components/Screen';
 import { Card } from '../../components/Card';
 import { PrimaryCTA } from '../../components/PrimaryCTA';
-import { Pill } from '../../components/Pill';
 import { ProgressBar } from '../../components/ProgressBar';
 import { MiniStat } from '../../components/MiniStat';
-import { MiniCalendar } from '../../components/MiniCalendar';
+import { SessionSchedule, ScheduleSession } from '../../components/SessionSchedule';
 import { DailyQuoteBar } from '../../components/DailyQuoteBar';
 import { Avatar } from '../../components/Avatar';
 import { Skeleton } from '../../components/Skeleton';
 
 import { mockTodaySession } from '../../mocks/mockTodaySession';
+import { mockPastSessions } from '../../mocks/mockPastSessions';
 import { mockQuotes } from '../../mocks/mockQuotes';
 import { mockUser } from '../../mocks/mockUser';
+import { dayName } from '../../utils/formatDate';
 
 import { haptic } from '../../utils/haptics';
 import { colors, spacing, radius, typography } from '../../theme';
@@ -41,13 +42,45 @@ export function HomeScreen() {
     return () => clearTimeout(timer);
   }, []);
 
-  const todayDayIndex = new Date().getDay();
-  // MiniCalendar uses 0=L(Mon) through 6=D(Sun), so map JS getDay (0=Sun) accordingly
-  const calendarToday = todayDayIndex === 0 ? 6 : todayDayIndex - 1;
-
   const handleStartSession = () => {
     haptic.medium();
     navigation.navigate('SessionPreview');
+  };
+
+  // Build schedule: 2 past sessions + today's session
+  const recentPast = mockPastSessions.slice(0, 2);
+  const now = new Date();
+  const scheduleSessions: ScheduleSession[] = [
+    ...recentPast.map((s) => {
+      const d = new Date(s.date);
+      return {
+        id: s.id,
+        title: s.title,
+        type: s.type,
+        duration: s.duration,
+        dayLabel: dayName(d),
+        dateNumber: String(d.getDate()),
+        status: 'completed' as const,
+        badge: s.badge,
+      };
+    }),
+    {
+      id: 'today',
+      title: mockTodaySession.title,
+      type: mockTodaySession.type,
+      duration: mockTodaySession.duration,
+      dayLabel: dayName(now),
+      dateNumber: String(now.getDate()),
+      status: 'today' as const,
+    },
+  ];
+
+  const handleSchedulePress = (session: ScheduleSession) => {
+    if (session.status === 'today') {
+      handleStartSession();
+    } else {
+      navigation.navigate('SessionDetail', { sessionId: session.id });
+    }
   };
 
   return (
@@ -100,38 +133,21 @@ export function HomeScreen() {
           </View>
         )}
 
-        {/* ── Session Card ── */}
+        {/* ── Mes séances ── */}
         {loading ? (
           <Skeleton
             width={'100%'}
-            height={200}
+            height={240}
             radius={radius.card}
             style={styles.sectionSpacing}
           />
         ) : (
           <Card style={styles.sectionSpacing}>
-            <MiniCalendar
-              activeDays={[0, 1, 3, 4]}
-              today={calendarToday}
+            <Text style={styles.scheduleTitle}>Mes séances</Text>
+            <SessionSchedule
+              sessions={scheduleSessions}
+              onPress={handleSchedulePress}
             />
-
-            <View style={styles.divider} />
-
-            <TouchableOpacity
-              onPress={handleStartSession}
-              activeOpacity={0.7}
-              style={styles.sessionRow}
-            >
-              <View style={styles.sessionInfo}>
-                <Text style={styles.sessionTitle}>{mockTodaySession.title}</Text>
-                <View style={styles.pillRow}>
-                  <Pill label={mockTodaySession.type} />
-                  <Pill label={`${mockTodaySession.duration} min`} />
-                  <Pill label={mockTodaySession.level} />
-                </View>
-              </View>
-              <Text style={styles.chevron}>{'›'}</Text>
-            </TouchableOpacity>
           </Card>
         )}
 
@@ -235,32 +251,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.base,
   },
 
-  /* Session Card */
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: spacing.md,
-  },
-  sessionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sessionInfo: {
-    flex: 1,
-  },
-  sessionTitle: {
+  /* Schedule */
+  scheduleTitle: {
     ...typography.h2,
     color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  pillRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  chevron: {
-    fontSize: 28,
-    color: colors.textMuted,
-    marginLeft: spacing.sm,
+    marginBottom: spacing.md,
   },
 
   /* Branding Card */
