@@ -12,7 +12,7 @@ interface ScreenProps {
 export function Screen({ children, scroll = true }: ScreenProps) {
   return (
     <LinearGradient
-      colors={[colors.background, '#0F1729']}
+      colors={[colors.background, '#EDF2FF']}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safe}>

@@ -28,6 +28,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     padding: spacing.base,
     ...shadows.subtle,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   highlight: {
     backgroundColor: colors.surfaceLight,

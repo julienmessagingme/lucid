@@ -59,6 +59,6 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   labelActive: {
-    color: colors.text,
+    color: '#FFFFFF',
   },
 });

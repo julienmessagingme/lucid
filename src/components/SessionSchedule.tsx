@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   dayCardToday: {
-    backgroundColor: 'rgba(59,130,246,0.1)',
+    backgroundColor: colors.accentSoft,
     borderColor: colors.accent,
   },
 
